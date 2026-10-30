@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#061426">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="JARVIS">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>JARVIS Mobile</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #04101e;
+      --panel: rgba(7, 30, 52, .78);
+      --cyan: #54dfff;
+      --blue: #168bff;
+      --muted: #78a8c8;
+      --line: rgba(65, 191, 255, .28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      color: #e8f8ff;
+      background:
+        radial-gradient(ellipse at 50% 35%, rgba(0, 113, 191, .24), transparent 43%),
+        linear-gradient(145deg, #061a30, #020812 72%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .18;
+      background-image: linear-gradient(rgba(65,191,255,.15) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(65,191,255,.15) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+    .app {
+      width: min(100%, 520px);
+      min-height: 100vh;
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    header { display:flex; justify-content:space-between; align-items:center; letter-spacing:.22em; }
+    .brand { font-size: 13px; font-weight: 800; color: var(--cyan); }
+    .live { font-size: 10px; color:#8ee9ff; border:1px solid var(--line); padding:7px 10px; border-radius:20px; letter-spacing:.16em; }
+    .clock { text-align:center; margin-top:26px; }
+    #time { font-size: clamp(38px, 12vw, 56px); font-weight:200; letter-spacing:.08em; text-shadow:0 0 24px rgba(84,223,255,.35); }
+    #date { color:var(--muted); font-size:11px; letter-spacing:.2em; text-transform:uppercase; margin-top:4px; }
+    .reactor-wrap { display:grid; place-items:center; margin:26px 0 22px; }
+    .reactor {
+      width:min(67vw, 270px); aspect-ratio:1; border-radius:50%; position:relative;
+      display:grid; place-items:center;
+      background: radial-gradient(circle, rgba(49,196,255,.20) 0 12%, rgba(8,99,173,.16) 13% 32%, transparent 33%);
+      filter: drop-shadow(0 0 24px rgba(0,166,255,.38));
+    }
+    .reactor::before, .reactor::after {
+      content:""; position:absolute; inset:3%; border-radius:50%;
+      border:1px solid rgba(84,223,255,.72);
+      box-shadow:0 0 18px rgba(22,139,255,.22), inset 0 0 20px rgba(22,139,255,.12);
+    }
+    .reactor::before { border-width:2px; border-style:double; animation:spin 18s linear infinite; }
+    .reactor::after { inset:14%; border-color:rgba(84,223,255,.42); border-style:dashed; animation:spin 24s linear infinite reverse; }
+    .ring { position:absolute; inset:24%; border-radius:50%; border:7px solid transparent; border-top-color:#66eaff; border-bottom-color:#168bff; box-shadow:0 0 20px rgba(84,223,255,.42); animation:spin 7s linear infinite; }
+    .core { width:29%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 38% 35%, #fff, #8ef3ff 22%, #159fff 58%, #07509b); box-shadow:0 0 18px #39cfff,0 0 55px rgba(0,153,255,.85); }
+    .reactor-label { position:absolute; bottom:-15px; font-size:10px; letter-spacing:.32em; color:#9beeff; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .status { text-align:center; color:var(--cyan); font-size:12px; letter-spacing:.3em; margin:4px 0 22px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .tile { border:1px solid var(--line); background:var(--panel); border-radius:13px; padding:15px; min-height:88px; box-shadow:inset 0 0 18px rgba(0,120,200,.06); }
+    .tile-label { color:var(--muted); font-size:9px; letter-spacing:.2em; }
+    .tile-value { margin-top:9px; font-size:18px; color:#e8faff; }
+    .tile-sub { margin-top:4px; font-size:10px; color:#78a8c8; }
+    .actions { display:grid; gap:10px; margin-top:auto; padding-top:24px; }
+    button { border:1px solid rgba(84,223,255,.55); background:linear-gradient(100deg, rgba(5,88,145,.8), rgba(8,38,70,.9)); color:#e8faff; border-radius:11px; padding:16px 14px; font-weight:700; letter-spacing:.17em; font-size:11px; cursor:pointer; }
+    button.secondary { background:rgba(5,21,38,.75); border-color:var(--line); color:#9edff5; }
+    button:active { transform:scale(.99); }
+    #message { min-height:16px; text-align:center; margin-top:10px; color:#86c7e8; font-size:10px; line-height:1.5; }
+    footer { text-align:center; color:rgba(120,168,200,.55); font-size:8px; letter-spacing:.22em; padding-top:18px; }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand">J.A.R.V.I.S.</div>
+      <div class="live">● SYSTEM ONLINE</div>
+    </header>
+    <section class="clock">
+      <div id="time">--:--</div>
+      <div id="date">INITIALIZING</div>
+    </section>
+    <section class="reactor-wrap" aria-label="JARVIS reactor animation">
+      <div class="reactor">
+        <div class="ring"></div><div class="core"></div>
+        <div class="reactor-label">ARC INTERFACE</div>
+      </div>
+    </section>
+    <div class="status" id="status">JARVIS STANDBY</div>
+    <section class="grid">
+      <div class="tile">
+        <div class="tile-label">LOCAL WEATHER</div>
+        <div class="tile-value" id="weather">--°</div>
+        <div class="tile-sub" id="weatherSub">Allow location to load</div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">DEVICE POWER</div>
+        <div class="tile-value" id="battery">--</div>
+        <div class="tile-sub" id="batterySub">iOS may restrict access</div>
+      </div>
+    </section>
+    <section class="actions">
+      <button id="voice">START VOICE ASSISTANT</button>
+      <button class="secondary" id="test">TEST JARVIS VOICE</button>
+      <div id="message">Voice conversations open in ChatGPT. This prototype does not listen continuously.</div>
+    </section>
+    <footer>PERSONAL ASSISTANT INTERFACE • MOBILE PROTOTYPE</footer>
+  </main>
+<script>
+  const $ = id => document.getElementById(id);
+  function updateClock() {
+    const now = new Date();
+    $('time').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    $('date').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  }
+  updateClock(); setInterval(updateClock, 1000);
+
+  async function loadWeather() {
+    if (!navigator.geolocation) {
+      $('weatherSub').textContent = 'Location unavailable in this browser'; return;
+    }
+    $('weatherSub').textContent = 'Requesting location permission…';
+    navigator.geolocation.getCurrentPosition(async pos => {
+      try {
+        const {latitude, longitude} = pos.coords;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const temp = Math.round(data.current.temperature_2m);
+        const codes = {0:'Clear sky',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm'};
+        $('weather').textContent = `${temp}°C`;
+        $('weatherSub').textContent = codes[data.current.weather_code] || 'Current conditions';
+      } catch(e) { $('weatherSub').textContent = 'Weather could not be loaded'; }
+    }, () => { $('weatherSub').textContent = 'Location permission not granted'; }, {timeout:10000});
+  }
+  loadWeather();
+
+  async function loadBattery() {
+    if ('getBattery' in navigator) {
+      try {
+        const b = await navigator.getBattery();
+        const paint = () => {
+          $('battery').textContent = `${Math.round(b.level * 100)}%`;
+          $('batterySub').textContent = b.charging ? 'Charging' : 'On battery';
+        };
+        paint(); b.addEventListener('levelchange', paint); b.addEventListener('chargingchange', paint);
+        return;
+      } catch(e) {}
+    }
+    $('battery').textContent = 'N/A';
+    $('batterySub').textContent = 'iOS does not expose battery data here';
+  }
+  loadBattery();
+
+  $('test').addEventListener('click', () => {
+    if (!('speechSynthesis' in window)) {
+      $('message').textContent = 'Speech playback is not supported in this browser.'; return;
+    }
+    const utterance = new SpeechSynthesisUtterance('Good day. JARVIS systems are online and ready.');
+    utterance.lang = 'en-US'; utterance.rate = 0.92; utterance.pitch = 0.88;
+    speechSynthesis.cancel(); speechSynthesis.speak(utterance);
+    $('status').textContent = 'JARVIS SPEAKING';
+    utterance.onend = () => $('status').textContent = 'JARVIS STANDBY';
+    $('message').textContent = 'Playing a short voice test.';
+  });
+  $('voice').addEventListener('click', () => {
+    $('message').textContent = 'Opening ChatGPT. Tap its Voice icon to start a live conversation with JARVIS.';
+    window.location.href = 'https://chatgpt.com/';
+  });
+
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
+  }
+</script>
+</body>
+</html>
