@@ -1,197 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#061426">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="JARVIS">
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <title>JARVIS Mobile</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #04101e;
-      --panel: rgba(7, 30, 52, .78);
-      --cyan: #54dfff;
-      --blue: #168bff;
-      --muted: #78a8c8;
-      --line: rgba(65, 191, 255, .28);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      min-height: 100svh;
-      color: #e8f8ff;
-      background:
-        radial-gradient(ellipse at 50% 35%, rgba(0, 113, 191, .24), transparent 43%),
-        linear-gradient(145deg, #061a30, #020812 72%);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow-x: hidden;
-    }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .18;
-      background-image: linear-gradient(rgba(65,191,255,.15) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(65,191,255,.15) 1px, transparent 1px);
-      background-size: 34px 34px;
-      mask-image: linear-gradient(to bottom, black, transparent 88%);
-    }
-    .app {
-      width: min(100%, 520px);
-      min-height: 100vh;
-      min-height: 100svh;
-      margin: 0 auto;
-      padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-    header { display:flex; justify-content:space-between; align-items:center; letter-spacing:.22em; }
-    .brand { font-size: 13px; font-weight: 800; color: var(--cyan); }
-    .live { font-size: 10px; color:#8ee9ff; border:1px solid var(--line); padding:7px 10px; border-radius:20px; letter-spacing:.16em; }
-    .clock { text-align:center; margin-top:26px; }
-    #time { font-size: clamp(38px, 12vw, 56px); font-weight:200; letter-spacing:.08em; text-shadow:0 0 24px rgba(84,223,255,.35); }
-    #date { color:var(--muted); font-size:11px; letter-spacing:.2em; text-transform:uppercase; margin-top:4px; }
-    .reactor-wrap { display:grid; place-items:center; margin:26px 0 22px; }
-    .reactor {
-      width:min(67vw, 270px); aspect-ratio:1; border-radius:50%; position:relative;
-      display:grid; place-items:center;
-      background: radial-gradient(circle, rgba(49,196,255,.20) 0 12%, rgba(8,99,173,.16) 13% 32%, transparent 33%);
-      filter: drop-shadow(0 0 24px rgba(0,166,255,.38));
-    }
-    .reactor::before, .reactor::after {
-      content:""; position:absolute; inset:3%; border-radius:50%;
-      border:1px solid rgba(84,223,255,.72);
-      box-shadow:0 0 18px rgba(22,139,255,.22), inset 0 0 20px rgba(22,139,255,.12);
-    }
-    .reactor::before { border-width:2px; border-style:double; animation:spin 18s linear infinite; }
-    .reactor::after { inset:14%; border-color:rgba(84,223,255,.42); border-style:dashed; animation:spin 24s linear infinite reverse; }
-    .ring { position:absolute; inset:24%; border-radius:50%; border:7px solid transparent; border-top-color:#66eaff; border-bottom-color:#168bff; box-shadow:0 0 20px rgba(84,223,255,.42); animation:spin 7s linear infinite; }
-    .core { width:29%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 38% 35%, #fff, #8ef3ff 22%, #159fff 58%, #07509b); box-shadow:0 0 18px #39cfff,0 0 55px rgba(0,153,255,.85); }
-    .reactor-label { position:absolute; bottom:-15px; font-size:10px; letter-spacing:.32em; color:#9beeff; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .status { text-align:center; color:var(--cyan); font-size:12px; letter-spacing:.3em; margin:4px 0 22px; }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .tile { border:1px solid var(--line); background:var(--panel); border-radius:13px; padding:15px; min-height:88px; box-shadow:inset 0 0 18px rgba(0,120,200,.06); }
-    .tile-label { color:var(--muted); font-size:9px; letter-spacing:.2em; }
-    .tile-value { margin-top:9px; font-size:18px; color:#e8faff; }
-    .tile-sub { margin-top:4px; font-size:10px; color:#78a8c8; }
-    .actions { display:grid; gap:10px; margin-top:auto; padding-top:24px; }
-    button { border:1px solid rgba(84,223,255,.55); background:linear-gradient(100deg, rgba(5,88,145,.8), rgba(8,38,70,.9)); color:#e8faff; border-radius:11px; padding:16px 14px; font-weight:700; letter-spacing:.17em; font-size:11px; cursor:pointer; }
-    button.secondary { background:rgba(5,21,38,.75); border-color:var(--line); color:#9edff5; }
-    button:active { transform:scale(.99); }
-    #message { min-height:16px; text-align:center; margin-top:10px; color:#86c7e8; font-size:10px; line-height:1.5; }
-    footer { text-align:center; color:rgba(120,168,200,.55); font-size:8px; letter-spacing:.22em; padding-top:18px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#030914">
+<link rel="manifest" href="manifest.webmanifest">
+<title>J.A.R.V.I.S.</title>
+<style>
+:root{--cyan:#54dfff;--blue:#168cff;--deep:#06152b;--muted:#82a8c5}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(ellipse at 50% 38%,#09264a 0,#061426 34%,#020711 76%);color:#eaf8ff;font-family:Arial,Helvetica,sans-serif;min-height:100vh;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(#4bbdff18 1px,transparent 1px),linear-gradient(90deg,#4bbdff18 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+header{display:flex;justify-content:space-between;align-items:center;padding:22px 22px 8px;letter-spacing:3px;font-size:12px;color:#9bcce8}
+.brand{font-weight:700;color:#dff8ff}.status{font-size:10px;letter-spacing:2px;color:#69e9ff}.status:before{content:"";display:inline-block;width:6px;height:6px;background:#51f4c4;border-radius:50%;margin-right:8px;box-shadow:0 0 10px #51f4c4}
+main{max-width:650px;margin:auto;padding:10px 18px 35px;text-align:center}
+h1{font-size:clamp(26px,6vw,40px);letter-spacing:8px;margin:15px 0 4px;font-weight:400;text-shadow:0 0 22px #2bbcff}
+.sub{font-size:10px;letter-spacing:4px;color:#75a9c8}
+.reactor-wrap{height:min(78vw,390px);min-height:280px;display:grid;place-items:center;position:relative;margin:8px auto 0}
+.reactor{width:min(72vw,330px);aspect-ratio:1;position:relative;display:grid;place-items:center;filter:drop-shadow(0 0 20px #168cff80)}
+.ring{position:absolute;border-radius:50%;border:1px solid #48cfff88;box-shadow:0 0 14px #168cff44,inset 0 0 12px #168cff22}
+.r1{inset:1%;border-width:2px;border-top-color:#b5f7ff;animation:spin 14s linear infinite}
+.r2{inset:8%;border:2px dashed #36baffaa;animation:spin 22s linear infinite reverse}
+.r3{inset:16%;border:1px solid #9beeff;box-shadow:0 0 24px #28baff,inset 0 0 22px #168cff66;animation:pulse 2.8s ease-in-out infinite}
+.r4{inset:23%;border:5px double #3abaff88;animation:spin 9s linear infinite}
+.r5{inset:31%;border:1px solid #b9f8ff;box-shadow:0 0 25px #2fcfff}
+.core{width:36%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#f1ffff 0,#9cf5ff 12%,#29c9ff 35%,#0872d5 62%,#031a3b 78%);box-shadow:0 0 20px #5deaff,0 0 55px #168cff,0 0 100px #087cff88;animation:corepulse 2.4s ease-in-out infinite}
+.tick{position:absolute;inset:4%;border-radius:50%;background:repeating-conic-gradient(from 0deg,#69dfff 0deg 1deg,transparent 1deg 15deg);mask:radial-gradient(circle,transparent 69%,#000 70%,#000 72%,transparent 73%);animation:spin 35s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{50%{transform:scale(1.035);opacity:.65}}@keyframes corepulse{50%{transform:scale(1.07);filter:brightness(1.35)}}
+.metrics{display:flex;justify-content:center;gap:34px;margin:0 auto 22px;color:#83b5d2;font-size:10px;letter-spacing:2px}.metric strong{display:block;color:#e4faff;font-size:17px;font-weight:400;letter-spacing:1px;margin-top:6px}
+.nav{display:flex;gap:8px;justify-content:center;margin:16px auto 18px}.nav button,.action{border:1px solid #287cb4;background:#071a30;color:#bcecff;border-radius:5px;padding:12px 20px;letter-spacing:2px;font-size:10px}.nav button.active{background:#0b3b64;border-color:#5bdfff;box-shadow:0 0 16px #168cff55;color:white}
+.panel{border:1px solid #1c5b85;background:#061326d9;border-radius:8px;padding:18px;text-align:left;box-shadow:0 0 28px #087cff18}
+.panel h2{font-size:12px;letter-spacing:3px;font-weight:400;color:#79dfff;margin:0 0 14px}
+#chatlog{height:210px;overflow:auto;color:#c8eaff;font-size:14px;line-height:1.5}.msg{padding:9px 11px;margin:8px 0;border-left:2px solid #2e9bd7;background:#0a2038;border-radius:2px}.msg.user{border-left-color:#67e9d0}
+.inputrow{display:flex;gap:8px;margin-top:12px}input{min-width:0;flex:1;background:#020b17;border:1px solid #28628a;color:white;border-radius:4px;padding:13px;font-size:14px;outline:none}input:focus{border-color:#58dfff}.send{background:#0b4775;color:white;border:1px solid #4acbff;border-radius:4px;padding:0 18px}
+.note{font-size:10px;line-height:1.5;color:#6f98b5;margin-top:12px}.hidden{display:none}.action{display:inline-block;margin-top:12px;text-decoration:none}
+footer{color:#416b89;font-size:9px;letter-spacing:2px;margin-top:25px}
+@media(max-width:420px){header{padding:18px 16px}.metrics{gap:22px}.nav button{padding:11px 15px}}
+</style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <div class="brand">J.A.R.V.I.S.</div>
-      <div class="live">● SYSTEM ONLINE</div>
-    </header>
-    <section class="clock">
-      <div id="time">--:--</div>
-      <div id="date">INITIALIZING</div>
-    </section>
-    <section class="reactor-wrap" aria-label="JARVIS reactor animation">
-      <div class="reactor">
-        <div class="ring"></div><div class="core"></div>
-        <div class="reactor-label">ARC INTERFACE</div>
-      </div>
-    </section>
-    <div class="status" id="status">JARVIS STANDBY</div>
-    <section class="grid">
-      <div class="tile">
-        <div class="tile-label">LOCAL WEATHER</div>
-        <div class="tile-value" id="weather">--°</div>
-        <div class="tile-sub" id="weatherSub">Allow location to load</div>
-      </div>
-      <div class="tile">
-        <div class="tile-label">DEVICE POWER</div>
-        <div class="tile-value" id="battery">--</div>
-        <div class="tile-sub" id="batterySub">iOS may restrict access</div>
-      </div>
-    </section>
-    <section class="actions">
-      <button id="voice">START VOICE ASSISTANT</button>
-      <button class="secondary" id="test">TEST JARVIS VOICE</button>
-      <div id="message">Voice conversations open in ChatGPT. This prototype does not listen continuously.</div>
-    </section>
-    <footer>PERSONAL ASSISTANT INTERFACE • MOBILE PROTOTYPE</footer>
-  </main>
+<header><div class="brand">STARK INDUSTRIES <span style="color:#3d9bc9">/</span> J.A.R.V.I.S.</div><div class="status">SYSTEM ONLINE</div></header>
+<main>
+<h1>J.A.R.V.I.S.</h1><div class="sub">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
+<section id="dashboard">
+<div class="reactor-wrap" aria-label="Animated blue arc reactor"><div class="reactor"><div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div><div class="ring r4"></div><div class="ring r5"></div><div class="tick"></div><div class="core"></div></div></div>
+<div class="metrics"><div class="metric">LOCAL TIME<strong id="clock">--:--</strong></div><div class="metric">DATE<strong id="date">---</strong></div><div class="metric">POWER<strong id="power">ONLINE</strong></div></div>
+</section>
+<nav class="nav"><button id="dashBtn" class="active">DASHBOARD</button><button id="chatBtn">JARVIS CHAT</button></nav>
+<section class="panel hidden" id="chatPanel">
+<h2>SECURE COMMUNICATION CHANNEL</h2>
+<div id="chatlog"><div class="msg">JARVIS: Good evening. My interface is online. The secure AI connection has not been configured yet.</div></div>
+<div class="inputrow"><input id="message" placeholder="Type your message..." autocomplete="off"><button class="send" id="send">SEND</button></div>
+<div class="note">This is the chat interface preview. A secure server connection is still required before JARVIS can generate live AI answers. Never place an API key in these website files.</div>
+<a class="action" href="https://chatgpt.com/" target="_blank" rel="noopener">OPEN AI CHAT</a>
+</section>
+<footer>STARK INDUSTRIES • PERSONAL ASSISTANT INTERFACE • V 2.1</footer>
+</main>
 <script>
-  const $ = id => document.getElementById(id);
-  function updateClock() {
-    const now = new Date();
-    $('time').textContent = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    $('date').textContent = now.toLocaleDateString([], {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-  }
-  updateClock(); setInterval(updateClock, 1000);
-
-  async function loadWeather() {
-    if (!navigator.geolocation) {
-      $('weatherSub').textContent = 'Location unavailable in this browser'; return;
-    }
-    $('weatherSub').textContent = 'Requesting location permission…';
-    navigator.geolocation.getCurrentPosition(async pos => {
-      try {
-        const {latitude, longitude} = pos.coords;
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const temp = Math.round(data.current.temperature_2m);
-        const codes = {0:'Clear sky',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Foggy',48:'Foggy',51:'Light drizzle',53:'Drizzle',55:'Heavy drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',71:'Light snow',73:'Snow',75:'Heavy snow',80:'Rain showers',81:'Rain showers',82:'Heavy showers',95:'Thunderstorm'};
-        $('weather').textContent = `${temp}°C`;
-        $('weatherSub').textContent = codes[data.current.weather_code] || 'Current conditions';
-      } catch(e) { $('weatherSub').textContent = 'Weather could not be loaded'; }
-    }, () => { $('weatherSub').textContent = 'Location permission not granted'; }, {timeout:10000});
-  }
-  loadWeather();
-
-  async function loadBattery() {
-    if ('getBattery' in navigator) {
-      try {
-        const b = await navigator.getBattery();
-        const paint = () => {
-          $('battery').textContent = `${Math.round(b.level * 100)}%`;
-          $('batterySub').textContent = b.charging ? 'Charging' : 'On battery';
-        };
-        paint(); b.addEventListener('levelchange', paint); b.addEventListener('chargingchange', paint);
-        return;
-      } catch(e) {}
-    }
-    $('battery').textContent = 'N/A';
-    $('batterySub').textContent = 'iOS does not expose battery data here';
-  }
-  loadBattery();
-
-  $('test').addEventListener('click', () => {
-    if (!('speechSynthesis' in window)) {
-      $('message').textContent = 'Speech playback is not supported in this browser.'; return;
-    }
-    const utterance = new SpeechSynthesisUtterance('Good day. JARVIS systems are online and ready.');
-    utterance.lang = 'en-US'; utterance.rate = 0.92; utterance.pitch = 0.88;
-    speechSynthesis.cancel(); speechSynthesis.speak(utterance);
-    $('status').textContent = 'JARVIS SPEAKING';
-    utterance.onend = () => $('status').textContent = 'JARVIS STANDBY';
-    $('message').textContent = 'Playing a short voice test.';
-  });
-  $('voice').addEventListener('click', () => {
-    $('message').textContent = 'Opening ChatGPT. Tap its Voice icon to start a live conversation with JARVIS.';
-    window.location.href = 'https://chatgpt.com/';
-  });
-
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(() => {}));
-  }
+const $=id=>document.getElementById(id);
+function updateTime(){const d=new Date();$('clock').textContent=d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});$('date').textContent=d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}).toUpperCase()}
+updateTime();setInterval(updateTime,1000);
+$('dashBtn').onclick=()=>{ $('dashboard').classList.remove('hidden');$('chatPanel').classList.add('hidden');$('dashBtn').classList.add('active');$('chatBtn').classList.remove('active')};
+$('chatBtn').onclick=()=>{ $('dashboard').classList.add('hidden');$('chatPanel').classList.remove('hidden');$('chatBtn').classList.add('active');$('dashBtn').classList.remove('active')};
+function send(){const v=$('message').value.trim();if(!v)return;const m=document.createElement('div');m.className='msg user';m.textContent='YOU: '+v;$('chatlog').appendChild(m);const r=document.createElement('div');r.className='msg';r.textContent='JARVIS: The interface received your message. Connect the secure AI server to enable live responses.';$('chatlog').appendChild(r);$('message').value='';$('chatlog').scrollTop=$('chatlog').scrollHeight}
+$('send').onclick=send;$('message').addEventListener('keydown',e=>{if(e.key==='Enter')send()});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js'));
 </script>
-</body>
-</html>
+</body></html>
